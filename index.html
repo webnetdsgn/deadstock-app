@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<style>html{color-scheme:light dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<meta name="robots" content="noindex,nofollow">
+<meta property="og:title" content="deadstock. — концепт мини-приложения">
+<meta property="og:description" content="Каталог одежды и обуви и раздел с футбольными джерси. Концепт студии WEBNET, товары и цены условные.">
+<title>Мини-приложение deadstock</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Flex:opsz,wdth,wght@8..144,25..151,100..1000&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* Layout: пояснение слева, телефон справа; на узком экране друг под другом.
+   Внутри телефона интерфейс монохромный, цвет дают только вещи. Тема приложения следует теме страницы. */
+:root{
+  --page:#E4E4E1; --bezel:#0C0C0C; --bg:#FFFFFF; --ink:#0B0B0B; --mut:#6B6B66;
+  --line:#E6E6E2; --card:#F3F3F0; --card2:#EAEAE6; --inv:#0B0B0B; --invtxt:#FFFFFF;
+  --accent:#E0301E; --glow:rgba(255,255,255,.75); --bar:rgba(255,255,255,.84); --shadow:0 30px 80px rgba(0,0,0,.2);
+  --f-ui:'Roboto Flex',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.3,1.4,.5,1);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --page:#09090A; --bezel:#2B2B2E; --bg:#0D0D0D; --ink:#F4F4F1; --mut:#8F8F89;
+  --line:#222224; --card:#171718; --card2:#212123; --inv:#F4F4F1; --invtxt:#0B0B0B;
+  --accent:#FF5A44; --glow:rgba(255,255,255,.13); --bar:rgba(23,23,24,.84); --shadow:0 30px 80px rgba(0,0,0,.6); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --page:#09090A; --bezel:#2B2B2E; --bg:#0D0D0D; --ink:#F4F4F1; --mut:#8F8F89;
+  --line:#222224; --card:#171718; --card2:#212123; --inv:#F4F4F1; --invtxt:#0B0B0B;
+  --accent:#FF5A44; --glow:rgba(255,255,255,.13); --bar:rgba(23,23,24,.84); --shadow:0 30px 80px rgba(0,0,0,.6); color-scheme:dark}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--page);color:var(--ink);font-family:var(--f-ui);font-size:14px;line-height:1.35}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px;border-radius:6px}
+
+.stage{min-height:100svh;display:grid;grid-template-columns:minmax(0,1fr);justify-items:center;align-content:center;gap:28px;padding:28px 16px}
+.intro{width:min(100%,372px)}
+.intro .k{font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.intro h1{margin:6px 0 10px;font-size:clamp(34px,6vw,56px);font-weight:800;font-stretch:75%;line-height:.95;letter-spacing:-.02em}
+.intro p{margin:0 0 10px;color:var(--mut);max-width:44ch}
+.intro ul{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.intro li{display:flex;gap:10px;align-items:baseline}
+.intro li b{font-family:var(--f-mono);font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase;min-width:84px}
+.intro .note{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line);font-size:12px}
+@media (min-width:900px){
+  .stage{grid-template-columns:minmax(0,420px) 372px;column-gap:72px;justify-content:center;align-items:center}
+  .intro{width:auto}
+}
+
+/* ---------- phone ---------- */
+.phone{position:relative;width:min(100%,372px);height:min(780px,calc(100svh - 56px));min-height:640px;padding:10px;border-radius:52px;background:var(--bezel);box-shadow:var(--shadow);animation:rise .8s var(--ease) both}
+.screen{position:relative;height:100%;border-radius:42px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;isolation:isolate}
+.screen::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:60;opacity:.05;mix-blend-mode:multiply;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .screen::after{mix-blend-mode:screen;opacity:.06}}
+:root[data-theme="dark"] .screen::after{mix-blend-mode:screen;opacity:.06}
+@media (max-width:440px){
+  .stage{padding:0 0 0;gap:0}
+  .intro{padding:20px 16px 4px}
+  .intro ul,.intro .note{display:none}
+  .phone{width:100%;padding:0;border-radius:0;box-shadow:none;background:transparent;height:min(780px,calc(100svh - 150px));min-height:600px}
+  .screen{border-radius:0}
+}
+@keyframes rise{from{opacity:0;transform:translateY(24px) scale(.98)}to{opacity:1;transform:none}}
+
+.island{position:absolute;top:10px;left:50%;width:92px;height:26px;margin-left:-46px;border-radius:14px;background:#000;z-index:50}
+.status{height:46px;flex:none;display:flex;align-items:flex-end;justify-content:space-between;padding:0 28px 6px;font-weight:700;font-size:13px}
+.status i{display:inline-flex;gap:5px;align-items:center}
+.status svg{width:16px;height:12px}
+@media (max-width:440px){.island,.status{display:none}.status{height:0}}
+
+.appbar{flex:none;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 8px}
+.logo{font-weight:800;font-size:25px;letter-spacing:-.045em;line-height:1}
+.logo em{font-style:normal;color:var(--accent)}
+.acts{display:flex;gap:4px}
+.ib{position:relative;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;transition:background .25s,transform .25s var(--spring)}
+.ib:hover{background:var(--card)}
+.ib:active{transform:scale(.9)}
+.ib svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.badge{position:absolute;top:3px;right:1px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;transform:scale(0);transition:transform .4s var(--spring)}
+.badge.on{transform:scale(1)}
+.badge.bump{animation:bump .5s var(--spring)}
+@keyframes bump{40%{transform:scale(1.4)}}
+
+.search{flex:none;overflow:hidden;max-height:0;opacity:0;transition:max-height .4s var(--ease),opacity .3s;padding:0 16px}
+.search.on{max-height:56px;opacity:1}
+.search label{display:flex;align-items:center;gap:10px;height:42px;margin-bottom:8px;padding:0 14px;border-radius:21px;background:var(--card)}
+.search svg{width:18px;height:18px;stroke:var(--mut);fill:none;stroke-width:1.8;stroke-linecap:round}
+.search input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;outline:0}
+.search input::placeholder{color:var(--mut)}
+
+/* ---------- views ---------- */
+.views{position:relative;flex:1;min-height:0}
+.view{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none;padding:0 16px 96px;opacity:0;transform:translateY(10px);pointer-events:none;visibility:hidden;transition:opacity .35s var(--ease),transform .5s var(--ease),visibility 0s .5s}
+.view::-webkit-scrollbar{display:none}
+.view.on{opacity:1;transform:none;pointer-events:auto;visibility:visible;transition:opacity .35s var(--ease),transform .5s var(--ease),visibility 0s}
+
+.h{display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 10px}
+.h h2{margin:0;font-size:26px;font-weight:800;font-stretch:70%;letter-spacing:.005em;text-transform:uppercase;line-height:1}
+.h span{font-family:var(--f-mono);font-size:11px;color:var(--mut);letter-spacing:.04em}
+
+.ticker{margin:2px -16px 0;overflow:hidden;border-block:1px solid var(--line);background:var(--card)}
+.ticker .tr{display:flex;width:max-content;animation:tick 26s linear infinite}
+.ticker span{padding:8px 18px;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.ticker span::after{content:"●";margin-left:36px;font-size:7px;vertical-align:middle;color:var(--accent)}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+.rail{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.rail::-webkit-scrollbar{display:none}
+.big{flex:none;width:236px;scroll-snap-align:start}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;height:34px;padding:0 14px;border-radius:17px;border:1px solid var(--line);font-weight:600;font-size:13px;white-space:nowrap;transition:background .3s var(--ease),color .3s,border-color .3s,transform .25s var(--spring)}
+.chip:active{transform:scale(.94)}
+.chip.on{background:var(--inv);color:var(--invtxt);border-color:var(--inv)}
+
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 10px}
+.card{position:relative;text-align:left;cursor:pointer;animation:cardIn .55s var(--ease) both;animation-delay:calc(var(--i,0)*45ms);transition:transform .35s var(--spring)}
+.card:active{transform:scale(.97)}
+@keyframes cardIn{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:none}}
+.ph{position:relative;aspect-ratio:1/1.08;border-radius:18px;background:radial-gradient(ellipse at 50% 42%,var(--glow),transparent 68%),var(--card);display:grid;place-items:center;overflow:hidden;transition:background .3s}
+.card:hover .ph{background:var(--card2)}
+.art{width:84%;height:84%;filter:drop-shadow(0 8px 8px rgba(0,0,0,.16));transition:transform .6s var(--ease)}
+.card:hover .art{transform:scale(1.06) rotate(-2deg)}
+.tagrow{position:absolute;left:8px;top:8px;display:flex;gap:4px;flex-wrap:wrap;max-width:calc(100% - 52px)}
+.tag{font-family:var(--f-mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:5px;background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.tag.ds{background:var(--inv);color:var(--invtxt);border-color:var(--inv)}
+.heart{position:absolute;right:6px;top:6px;width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--bg);transition:transform .3s var(--spring)}
+.heart svg{width:18px;height:18px;fill:none;stroke:var(--ink);stroke-width:1.9;transition:fill .25s,stroke .25s}
+.heart.on svg{fill:var(--accent);stroke:var(--accent)}
+.heart.pop{animation:pop .5s var(--spring)}
+@keyframes pop{35%{transform:scale(1.4)}}
+.meta{padding:8px 2px 0}
+.meta .b{font-family:var(--f-mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}
+.meta .n{margin:2px 0 3px;font-weight:600;font-size:14px;line-height:1.15;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta .p{font-weight:800;font-stretch:80%;font-size:16px;letter-spacing:.01em}
+.meta .s{font-family:var(--f-mono);font-size:10px;color:var(--mut);margin-left:6px}
+
+/* football */
+.fhero{position:relative;margin-top:6px;border-radius:22px;background:var(--card2);padding:16px 16px 0;overflow:hidden;display:flex;flex-direction:column}
+.fhero .k{font-family:var(--f-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);position:relative;z-index:1}
+.fhero h2{margin:6px 0 0;font-size:66px;font-weight:900;font-stretch:62%;text-transform:uppercase;line-height:.9;letter-spacing:0;position:relative;z-index:1}
+.fhero p{margin:8px 0 0;max-width:15ch;color:var(--mut);font-size:13px;position:relative;z-index:1}
+.fhero .jr{position:absolute;right:-16px;top:24px;width:128px;transform:rotate(9deg);animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:rotate(5deg) translateY(-8px)}}
+.fhero .stub{position:relative;margin:20px -16px 0;padding:12px 16px 12px;border-top:2px dashed var(--bg);display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--mut)}
+.fhero .stub::before,.fhero .stub::after{content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.fhero .stub::before{left:-10px}.fhero .stub::after{right:-10px}
+.deps{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:2px 16px 4px}
+.deps::-webkit-scrollbar{display:none}
+.dep{flex:none;width:92px;padding:10px;border-radius:16px;border:1px solid var(--line);text-align:left;transition:background .3s var(--ease),color .3s,border-color .3s,transform .3s var(--spring)}
+.dep:active{transform:scale(.95)}
+.dep .dots{display:flex;margin-bottom:12px}
+.dep .dots i{width:20px;height:20px;border-radius:50%;border:2px solid var(--bg);margin-right:-7px}
+.dep b{display:block;font-weight:700;font-size:13px}
+.dep small{font-family:var(--f-mono);font-size:10px;opacity:.7}
+.dep.on{background:var(--inv);color:var(--invtxt);border-color:var(--inv)}
+.dep.on .dots i{border-color:var(--inv)}
+
+.empty{padding:56px 12px;text-align:center;color:var(--mut)}
+.empty b{display:block;color:var(--ink);font-size:18px;font-weight:800;font-stretch:80%;margin-bottom:6px}
+.empty svg{width:56px;height:56px;stroke:var(--ink);fill:none;stroke-width:1.4;margin-bottom:12px;opacity:.5}
+
+/* order */
+.line{display:grid;grid-template-columns:72px 1fr auto;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line);animation:cardIn .5s var(--ease) both}
+.line .ph{aspect-ratio:1;border-radius:14px}
+.line .n{font-weight:600;line-height:1.15}
+.line .s{font-family:var(--f-mono);font-size:10px;color:var(--mut);margin-top:3px}
+.line .p{font-weight:800;font-stretch:80%;text-align:right}
+.rm{font-size:11px;color:var(--mut);text-decoration:underline;margin-top:4px}
+.sum{margin-top:16px;padding:14px;border-radius:18px;background:var(--card)}
+.sum div{display:flex;justify-content:space-between;padding:3px 0;color:var(--mut)}
+.sum .t{color:var(--ink);font-weight:800;font-size:18px;font-stretch:85%;padding-top:10px;margin-top:6px;border-top:1px dashed var(--line)}
+.cta{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:52px;margin-top:12px;border-radius:26px;background:var(--inv);color:var(--invtxt);font-weight:700;font-size:15px;transition:transform .3s var(--spring),opacity .2s}
+.cta:active{transform:scale(.97)}
+.cta svg{width:20px;height:20px;fill:currentColor}
+.hint{margin:10px 4px 0;font-size:12px;color:var(--mut);text-align:center}
+
+/* tab bar */
+.tabbar{position:absolute;left:12px;right:12px;bottom:12px;height:62px;z-index:20;border-radius:31px;background:var(--bar);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--line);display:grid;grid-template-columns:repeat(4,1fr);padding:4px}
+.tabbar .pill{position:absolute;left:4px;top:4px;bottom:4px;width:calc((100% - 8px)/4);border-radius:27px;background:var(--inv);transition:transform .5s var(--spring)}
+.tab{position:relative;z-index:1;display:grid;place-items:center;align-content:center;gap:2px;border-radius:27px;color:var(--mut);transition:color .3s;font-size:10px;font-weight:600;letter-spacing:.02em}
+.tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .4s var(--spring)}
+.tab.on{color:var(--invtxt)}
+.tab.on svg{transform:translateY(-1px) scale(1.08)}
+
+/* product sheet */
+.sheet{position:absolute;inset:0;z-index:40;pointer-events:none;visibility:hidden;transition:visibility 0s .5s}
+.sheet.on{pointer-events:auto;visibility:visible;transition:visibility 0s}
+.sheet .bd{position:absolute;inset:0;background:rgba(0,0,0,.5);opacity:0;transition:opacity .4s}
+.sheet.on .bd{opacity:1}
+.sheet .pn{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;scrollbar-width:none;background:var(--bg);border-radius:30px 30px 0 0;padding:8px 18px 24px;transform:translateY(102%);transition:transform .55s var(--ease)}
+.sheet.on .pn{transform:none}
+.grab{width:40px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 10px}
+.hero{position:relative;border-radius:22px;background:radial-gradient(ellipse at 50% 42%,var(--glow),transparent 68%),var(--card);aspect-ratio:1/.86;display:grid;place-items:center;overflow:hidden}
+.hero .art{width:76%;height:76%;animation:float2 6s ease-in-out infinite;filter:drop-shadow(0 16px 14px rgba(0,0,0,.2))}
+@keyframes float2{50%{transform:translateY(-6px) rotate(-1.5deg)}}
+.hero .x{position:absolute;left:10px;top:10px;background:var(--bg)}
+.hero .heart{right:10px;top:10px;width:40px;height:40px}
+.sh{margin:14px 0 2px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.sh .b{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.sh h3{margin:2px 0 0;font-size:26px;font-weight:800;font-stretch:72%;text-transform:uppercase;line-height:1;letter-spacing:.005em}
+.sh .pr{font-weight:800;font-stretch:80%;font-size:24px;white-space:nowrap}
+.spec{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0;padding:12px 0;border-block:1px dashed var(--line);font-size:13px}
+.spec dt{font-family:var(--f-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);padding-top:2px}
+.spec dd{margin:0}
+.sizes{display:flex;flex-wrap:wrap;gap:8px}
+.sz{min-width:48px;height:40px;padding:0 12px;border-radius:12px;border:1px solid var(--line);font-family:var(--f-mono);font-weight:500;font-size:13px;transition:background .3s var(--ease),color .3s,border-color .3s,transform .3s var(--spring)}
+.sz:active{transform:scale(.93)}
+.sz.on{background:var(--inv);color:var(--invtxt);border-color:var(--inv)}
+.lbl{font-family:var(--f-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--mut);margin:0 0 8px}
+
+.toast{position:absolute;left:50%;bottom:86px;z-index:70;max-width:calc(100% - 40px);padding:11px 16px;border-radius:22px;background:var(--inv);color:var(--invtxt);font-weight:600;font-size:13px;text-align:center;transform:translate(-50%,24px) scale(.94);opacity:0;pointer-events:none;transition:transform .45s var(--spring),opacity .3s}
+.toast.on{transform:translate(-50%,0) scale(1);opacity:1}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;transition-delay:0s!important}
+  .ticker .tr{animation:none}
+}
+</style>
+</head>
+<body>
+
+<main class="stage">
+  <section class="intro">
+    <div class="k">Концепт мини-приложения · студия WEBNET</div>
+    <h1>deadstock.<br>в Telegram</h1>
+    <p>Каталог одежды, обуви и аксессуаров и отдельный раздел с оригинальными футбольными джерси. Нажимайте на вкладки, вещи и сердечки.</p>
+    <ul>
+      <li><b>Каталог</b><span>новинки, фильтры по категориям, поиск</span></li>
+      <li><b>Футбол</b><span>отделы по странам, эпохи от 80-х до 2000-х</span></li>
+      <li><b>Карточка</b><span>размер, состояние, «в заказ»</span></li>
+      <li><b>Заказ</b><span>сумма и оформление через менеджера</span></li>
+    </ul>
+    <p class="note">Это макет. Вещи, сезоны и цены условные и не относятся к реальному каталогу магазина.</p>
+  </section>
+
+  <div class="phone">
+    <div class="screen" id="app">
+      <div class="island"></div>
+      <div class="status"><span>9:41</span><i>
+        <svg viewBox="0 0 16 12" fill="currentColor"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.4" y="5.5" width="3" height="6.5" rx="1"/><rect x="8.8" y="3" width="3" height="9" rx="1"/><rect x="13.2" y="0" width="3" height="12" rx="1"/></svg>
+        <svg viewBox="0 0 26 12" fill="none" stroke="currentColor"><rect x=".5" y=".5" width="22" height="11" rx="3.5"/><rect x="2.5" y="2.5" width="14" height="7" rx="1.8" fill="currentColor" stroke="none"/><rect x="24" y="4" width="2" height="4" rx="1" fill="currentColor" stroke="none"/></svg>
+      </i></div>
+
+      <div class="appbar">
+        <div class="logo">deadstock<em>.</em></div>
+        <div class="acts">
+          <button class="ib" data-act="search" aria-label="Поиск"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></button>
+          <button class="ib" data-tab="order" aria-label="Заказ"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 016 0V8"/></svg><span class="badge" id="badge">0</span></button>
+        </div>
+      </div>
+      <div class="search" id="search"><label><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg><input id="q" type="search" placeholder="Бренд, клуб, название" autocomplete="off"></label></div>
+
+      <div class="views">
+        <section class="view on" id="v-shop" aria-label="Каталог"></section>
+        <section class="view" id="v-foot" aria-label="Футбол"></section>
+        <section class="view" id="v-favs" aria-label="Избранное"></section>
+        <section class="view" id="v-order" aria-label="Заказ"></section>
+      </div>
+
+      <nav class="tabbar" id="tabs" aria-label="Разделы">
+        <span class="pill" id="pill"></span>
+        <button class="tab on" data-tab="shop"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5"/></svg>Каталог</button>
+        <button class="tab" data-tab="foot"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 8.2l3.4 2.5-1.3 4h-4.2l-1.3-4L12 8.2zM12 3.5v4.7M15.4 10.7l4.3-1.4M14.1 14.7l2.7 3.6M9.9 14.7l-2.7 3.6M8.6 10.7L4.3 9.3"/></svg>Футбол</button>
+        <button class="tab" data-tab="favs"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.5a4.3 4.3 0 017.5 2.3C19.5 15.4 12 20 12 20z"/></svg>Избранное</button>
+        <button class="tab" data-tab="order"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 016 0V8"/></svg>Заказ</button>
+      </nav>
+
+      <div class="sheet" id="sheet" aria-hidden="true">
+        <div class="bd" data-act="close"></div>
+        <div class="pn" id="pn" role="dialog" aria-modal="true" aria-label="Карточка товара"></div>
+      </div>
+      <div class="toast" id="toast" role="status"></div>
+    </div>
+  </div>
+</main>
+
+<script>
+(function(){
+'use strict';
+var uid=0;
+var $=function(s,r){return (r||document).querySelector(s)};
+var fmt=function(n){return new Intl.NumberFormat('ru-RU').format(n).replace(/ /g,' ')+' ₽'};
+var esc=function(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+
+/* ---------- иллюстрации ---------- */
+function svg(inner){return '<svg class="art" viewBox="0 0 200 200" aria-hidden="true">'+inner+'</svg>'}
+function jersey(o){
+  var id='j'+(++uid),c1=o.c1,c2=o.c2||o.c1,tr=o.tr||'#fff',pat='',i;
+  var shape='M62 30 L34 42 L6 82 L34 102 L50 86 L50 182 Q50 190 58 190 L142 190 Q150 190 150 182 L150 86 L166 102 L194 82 L166 42 L138 30 Q126 46 100 46 Q74 46 62 30 Z';
+  if(o.p==='stripes'){for(i=-6;i<210;i+=36)pat+='<rect x="'+i+'" y="0" width="18" height="200" fill="'+c2+'"/>'}
+  if(o.p==='hoops'){for(i=30;i<200;i+=30)pat+='<rect x="0" y="'+i+'" width="200" height="14" fill="'+c2+'"/>'}
+  if(o.p==='halves')pat+='<rect x="100" y="0" width="100" height="200" fill="'+c2+'"/>';
+  if(o.p==='band')pat+='<rect x="78" y="0" width="44" height="200" fill="'+c2+'"/>';
+  if(o.p==='sash')pat+='<rect x="-30" y="94" width="260" height="34" transform="rotate(38 100 110)" fill="'+c2+'"/>';
+  if(o.sl)pat+='<rect x="0" y="0" width="51" height="120" fill="'+o.sl+'"/><rect x="149" y="0" width="51" height="120" fill="'+o.sl+'"/>';
+  var collar=o.collar==='polo'
+    ?'<path d="M80 30 L100 42 L93 58 Z M120 30 L100 42 L107 58 Z" fill="'+tr+'"/><path d="M74 30 Q100 52 126 30" fill="none" stroke="'+tr+'" stroke-width="4"/>'
+    :'<path d="M76 31 L100 58 L124 31" fill="none" stroke="'+tr+'" stroke-width="7" stroke-linejoin="round"/>';
+  return svg('<defs><clipPath id="'+id+'c"><path d="'+shape+'"/></clipPath><linearGradient id="'+id+'g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"/><stop offset="1" stop-color="#000" stop-opacity=".2"/></linearGradient></defs>'
+    +'<g clip-path="url(#'+id+'c)"><rect width="200" height="200" fill="'+c1+'"/>'+pat+'<rect width="200" height="200" fill="url(#'+id+'g)"/>'
+    +'<path d="M50 86 V190 M150 86 V190" stroke="#000" stroke-opacity=".16" stroke-width="3"/></g>'
+    +'<path d="M12 80 L36 100 M188 80 L164 100" stroke="'+tr+'" stroke-width="7" stroke-linecap="round"/>'
+    +collar
+    +'<path d="M68 70 h14 v11 q0 8 -7 11 q-7 -3 -7 -11 z" fill="'+tr+'" opacity=".92"/>'
+    +'<path d="M117 72 l9 -4 M117 78 l9 -4 M117 84 l9 -4" stroke="'+tr+'" stroke-width="2.4" stroke-linecap="round"/>'
+    +'<rect x="76" y="112" width="48" height="16" rx="2" fill="'+tr+'" opacity=".88"/><path d="M82 120 h36" stroke="'+c1+'" stroke-width="3" stroke-linecap="round" opacity=".85"/>'
+    +'<path d="'+shape+'" fill="none" stroke="#000" stroke-opacity=".28" stroke-width="1.6" stroke-linejoin="round"/>');
+}
+function puffer(o){
+  var q='';for(var y=84;y<=172;y+=17)q+='<path d="M50 '+y+' Q100 '+(y+7)+' 150 '+y+'" stroke="#000" stroke-opacity=".3" stroke-width="2.4" fill="none"/>';
+  return svg('<path d="M50 62 L22 148 Q20 158 29 160 L44 164 L58 84 Z M150 62 L178 148 Q180 158 171 160 L156 164 L142 84 Z" fill="'+o.c+'"/>'
+   +'<path d="M62 38 Q100 28 138 38 L150 62 L150 178 Q150 185 143 185 L57 185 Q50 185 50 178 L50 62 Z" fill="'+o.c+'"/>'+q
+   +'<path d="M32 118 Q40 124 52 122 M168 118 Q160 124 148 122" stroke="#000" stroke-opacity=".28" stroke-width="2.4" fill="none"/>'
+   +'<path d="M72 36 Q100 50 128 36 L128 54 Q100 68 72 54 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".3" stroke-width="2"/>'
+   +'<path d="M100 56 V185" stroke="'+o.c2+'" stroke-width="3"/><rect x="118" y="92" width="22" height="9" rx="2" fill="'+o.c2+'"/>'
+   +'<path d="M62 38 Q100 28 138 38 L150 62 L150 178 Q150 185 143 185 L57 185 Q50 185 50 178 L50 62 Z" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>');
+}
+function bomber(o){
+  var rib='';for(var x=54;x<148;x+=7)rib+='<path d="M'+x+' 168 V184" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>';
+  return svg('<path d="M50 62 L22 150 Q20 158 29 160 L44 164 L58 84 Z M150 62 L178 150 Q180 158 171 160 L156 164 L142 84 Z" fill="'+o.c+'"/>'
+   +'<path d="M64 44 Q100 36 136 44 L150 62 L150 168 L50 168 L50 62 Z" fill="'+o.c+'"/>'
+   +'<rect x="50" y="166" width="100" height="18" rx="4" fill="'+o.c2+'"/>'+rib
+   +'<rect x="22" y="152" width="22" height="14" rx="4" transform="rotate(14 33 159)" fill="'+o.c2+'"/><rect x="156" y="152" width="22" height="14" rx="4" transform="rotate(-14 167 159)" fill="'+o.c2+'"/>'
+   +'<path d="M70 42 Q100 52 130 42 L130 56 Q100 64 70 56 Z" fill="'+o.c2+'"/>'
+   +'<path d="M100 58 V168" stroke="#000" stroke-opacity=".35" stroke-width="2.5"/>'
+   +'<circle cx="76" cy="92" r="13" fill="none" stroke="'+o.c2+'" stroke-width="3"/><path d="M70 96 Q76 84 83 90 Q80 98 70 96z" fill="'+o.c2+'"/>'
+   +'<path d="M64 44 Q100 36 136 44 L150 62 L150 168 L50 168 L50 62 Z" fill="none" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>');
+}
+function sneaker(o){
+  return svg('<rect x="20" y="130" width="164" height="20" rx="10" fill="'+(o.sole||'#f2f2f2')+'" stroke="#000" stroke-opacity=".22" stroke-width="1.5"/>'
+   +'<path d="M24 132 L24 78 Q24 66 36 67 L58 70 Q66 70 70 62 L88 60 Q93 84 114 92 L148 100 Q178 108 184 128 L184 134 L24 134 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".22" stroke-width="1.5"/>'
+   +'<path d="M148 100 Q178 108 184 128 L184 134 L128 134 Q140 118 148 100 Z" fill="'+o.c2+'"/>'
+   +'<path d="M50 122 Q96 132 140 102" stroke="'+o.c2+'" stroke-width="9" stroke-linecap="round" fill="none"/>'
+   +'<path d="M92 82 l16 -8 M100 90 l16 -8 M110 96 l16 -8" stroke="#fff" stroke-width="3.5" stroke-linecap="round"/>'
+   +'<path d="M24 100 H44" stroke="'+o.c2+'" stroke-width="10" stroke-linecap="round"/>');
+}
+function tee(o){
+  return svg('<path d="M62 36 L38 48 L12 84 L38 100 L52 86 L52 176 Q52 183 59 183 L141 183 Q148 183 148 176 L148 86 L162 100 L188 84 L162 48 L138 36 Q128 54 100 54 Q72 54 62 36 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'
+   +'<path d="M62 36 Q72 54 100 54 Q128 54 138 36" fill="none" stroke="#000" stroke-opacity=".3" stroke-width="5"/>'
+   +'<rect x="72" y="88" width="56" height="40" rx="3" fill="'+o.c2+'"/>'
+   +'<text x="100" y="114" text-anchor="middle" font-family="Roboto Flex,Arial,sans-serif" font-weight="800" font-size="13" fill="'+(o.tx||'#fff')+'">'+esc(o.t||'deadstock.')+'</text>');
+}
+function pants(o){
+  return svg('<path d="M58 24 L142 24 L148 62 L158 178 L116 178 L100 80 L84 178 L42 178 L52 62 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'
+   +'<rect x="56" y="24" width="88" height="12" fill="#000" fill-opacity=".22"/>'
+   +'<path d="M92 36 v18 M108 36 v18" stroke="'+o.c2+'" stroke-width="2.5" stroke-linecap="round"/>'
+   +'<rect x="54" y="96" width="30" height="34" rx="3" fill="#000" fill-opacity=".16"/><rect x="116" y="96" width="30" height="34" rx="3" fill="#000" fill-opacity=".16"/>'
+   +'<path d="M54 106 H84 M116 106 H146" stroke="'+o.c2+'" stroke-width="2"/>'
+   +'<path d="M46 160 H82 M118 160 H154" stroke="'+o.c2+'" stroke-width="5"/><path d="M100 80 V120" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>');
+}
+function cap(o){
+  return svg('<path d="M40 122 Q40 54 100 54 Q160 54 160 122 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'
+   +'<path d="M100 56 Q82 90 80 122 M100 56 Q118 90 120 122" stroke="#000" stroke-opacity=".22" stroke-width="2" fill="none"/>'
+   +'<path d="M34 122 Q100 108 170 126 Q178 142 150 144 Q90 136 34 136 Z" fill="'+o.c2+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'
+   +'<circle cx="100" cy="54" r="5" fill="'+o.c2+'"/><rect x="86" y="84" width="28" height="14" rx="2" fill="'+o.c2+'"/>');
+}
+function tote(o){
+  return svg('<path d="M74 72 Q74 26 100 26 Q126 26 126 72" fill="none" stroke="'+o.c2+'" stroke-width="7" stroke-linecap="round"/>'
+   +'<path d="M50 72 L150 72 L158 180 Q158 188 150 188 L50 188 Q42 188 42 180 Z" fill="'+o.c+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'
+   +'<text x="100" y="136" text-anchor="middle" font-family="Roboto Flex,Arial,sans-serif" font-weight="800" font-size="25" letter-spacing="-1" fill="'+o.c2+'">deadstock.</text>');
+}
+function scarf(o){
+  var s='',i;for(i=0;i<9;i++)s+='<rect x="64" y="'+(22+i*16)+'" width="72" height="8" fill="'+o.c2+'"/>';
+  var f='';for(i=0;i<9;i++)f+='<path d="M'+(68+i*8)+' 166 v14" stroke="'+(i%2?o.c2:o.c)+'" stroke-width="3" stroke-linecap="round"/>';
+  return svg('<g transform="rotate(-7 100 100)"><rect x="64" y="14" width="72" height="152" rx="3" fill="'+o.c+'" stroke="#000" stroke-opacity=".25" stroke-width="1.5"/>'+s+f+'</g>');
+}
+function art(a){
+  switch(a.t){
+    case 'jersey':return jersey(a);case 'puffer':return puffer(a);case 'bomber':return bomber(a);
+    case 'sneaker':return sneaker(a);case 'tee':return tee(a);case 'pants':return pants(a);
+    case 'cap':return cap(a);case 'tote':return tote(a);case 'scarf':return scarf(a);
+  }return '';
+}
+
+/* ---------- данные (условные) ---------- */
+var CATS=['Всё','Верхняя одежда','Футболки','Низ','Кроссовки','Аксессуары','Коллабы'];
+var SHOP=[
+ {id:'c1',name:'Пуховик 700',brand:'The North Face',cat:'Верхняя одежда',tags:['Коллабы'],cond:'ds',price:96000,sizes:['M','L','XL'],size:'L',note:'Пух, водоотталкивающий нейлон',year:'2024',art:{t:'puffer',c:'#35353A',c2:'#F07D1A'}},
+ {id:'c2',name:'Штаны-трансформеры',brand:'TNF × Undercover',cat:'Низ',tags:['Коллабы'],cond:'ds',price:38000,sizes:['S','L','XL'],size:'L',note:'Нейлон рипстоп, превращаются в шорты, светоотражающие логотипы',year:'2024',art:{t:'pants',c:'#6B7A4F',c2:'#F1ECE0'}},
+ {id:'c3',name:'Air Max 1 PRM',brand:'Nike',cat:'Кроссовки',tags:[],cond:'ds',price:22000,sizes:['UK7','UK8','UK9'],size:'UK8',note:'Премиальные материалы, 27 см, 42.5 EU',year:'2023',art:{t:'sneaker',c:'#EDE6D6',c2:'#D1402B',sole:'#F4F1EA'}},
+ {id:'c4',name:'Souvenir jacket «Osaka»',brand:'Evisu',cat:'Верхняя одежда',tags:[],cond:'vint',price:54000,sizes:['M','L'],size:'M',note:'Хлопок, вышивка на спине, ребристые манжеты',year:'2012',art:{t:'bomber',c:'#59613F',c2:'#C9A24A'}},
+ {id:'c5',name:'Box logo tee',brand:'Supreme',cat:'Футболки',tags:['Коллабы'],cond:'ds',price:18500,sizes:['S','M','L'],size:'M',note:'Плотный хлопок, принт спереди',year:'2022',art:{t:'tee',c:'#EDEDE8',c2:'#D8281C',t:'deadstock.'}},
+ {id:'c6',name:'Dunk Low',brand:'Nike',cat:'Кроссовки',tags:[],cond:'vint',price:17500,sizes:['UK8','UK9','UK10'],size:'UK9',note:'Кожа, лёгкие следы носки',year:'2019',art:{t:'sneaker',c:'#243C7A',c2:'#F2F0E8',sole:'#EFEDE6'}},
+ {id:'c7',name:'Tour tee 1999',brand:'Vintage',cat:'Футболки',tags:[],cond:'vint',price:9800,sizes:['L','XL'],size:'L',note:'Односторонний шов, выцветший принт',year:'1999',art:{t:'tee',c:'#222224',c2:'#A9391D',tx:'#F2E7D0',t:'WORLD TOUR'}},
+ {id:'c8',name:'Кепка 6-panel',brand:'Undercover',cat:'Аксессуары',tags:['Коллабы'],cond:'ds',price:12400,sizes:['One size'],size:'One size',note:'Хлопок, регулируемый ремешок',year:'2023',art:{t:'cap',c:'#E8E1CF',c2:'#1C1C1E'}},
+ {id:'c9',name:'Тоут deadstock.',brand:'deadstock.',cat:'Аксессуары',tags:[],cond:'ds',price:3900,sizes:['One size'],size:'One size',note:'Плотный холст, принт',year:'2025',art:{t:'tote',c:'#F0EBDD',c2:'#111111'}},
+ {id:'c10',name:'Шарф болельщика',brand:'Ultras',cat:'Аксессуары',tags:[],cond:'vint',price:4800,sizes:['One size'],size:'One size',note:'Акрил, двусторонний, бахрома',year:'1996',art:{t:'scarf',c:'#B3262B',c2:'#F1ECE0'}}
+];
+var DEPS=['Все','Россия','Англия','Италия','Испания','Сборные','Другие'];
+var DEPCOL={'Все':['#0B0B0B','#888'],'Россия':['#C8102E','#fff'],'Англия':['#C8102E','#1D2A5B'],'Италия':['#009246','#fff'],'Испания':['#F1BF00','#AA151B'],'Сборные':['#F28A1B','#1E3F8F'],'Другие':['#4DA3E0','#111']};
+function J(id,club,dep,season,maker,cond,price,size,o,extra){return {id:id,name:club,brand:dep,dep:dep,season:season,maker:maker,cat:'Футбол',tags:extra||[],cond:cond,price:price,sizes:['S','M','L','XL'],size:size,year:season.slice(0,4),art:Object.assign({t:'jersey'},o)}}
+var FOOT=[
+ J('f1','Спартак Москва','Россия','1996/97','','ds',28000,'L',{c1:'#C8102E',tr:'#fff',collar:'v'}),
+ J('f2','ЦСКА','Россия','1999/00','','vint',19500,'M',{c1:'#C8102E',c2:'#1E3F8F',p:'stripes',tr:'#fff',collar:'polo'}),
+ J('f3','Динамо Москва','Россия','1997/98','','vint',21000,'XL',{c1:'#1B4FA0',tr:'#fff',collar:'v'}),
+ J('f4','Зенит','Россия','2001/02','','ds',24500,'L',{c1:'#4DA3E0',tr:'#fff',collar:'polo'}),
+ J('f5','Милан','Италия','1995/96','Lotto','vint',46000,'L',{c1:'#C8102E',c2:'#111',p:'stripes',tr:'#fff',collar:'polo'},['Редкое']),
+ J('f6','Ювентус','Италия','1996/97','Kappa','vint',38000,'M',{c1:'#F2F2F2',c2:'#161616',p:'stripes',tr:'#161616',collar:'polo'}),
+ J('f7','Интер','Италия','1997/98','Umbro','ds',52000,'XL',{c1:'#1B4FA0',c2:'#111',p:'stripes',tr:'#F1C232',collar:'v'},['Редкое']),
+ J('f8','Ливерпуль','Англия','1993/94','Adidas','vint',34000,'L',{c1:'#C8102E',tr:'#0E8F5B',collar:'polo'}),
+ J('f9','Манчестер Юнайтед','Англия','1998/99','Umbro','vint',41000,'M',{c1:'#C8102E',tr:'#fff',collar:'polo'}),
+ J('f10','Арсенал','Англия','1991/93','Adidas','vint',29500,'L',{c1:'#F2C230',sl:'#1D2A5B',tr:'#1D2A5B',collar:'v'}),
+ J('f11','Барселона','Испания','1991/92','Meyba','vint',44000,'M',{c1:'#1B4FA0',c2:'#8A1538',p:'stripes',tr:'#F1C232',collar:'polo'}),
+ J('f12','Реал Мадрид','Испания','1997/98','Kelme','ds',36000,'L',{c1:'#F4F4F2',tr:'#1D2A5B',collar:'v'}),
+ J('f13','Аякс','Другие','1995/96','Umbro','vint',39000,'L',{c1:'#F4F4F2',c2:'#C8102E',p:'band',tr:'#C8102E',collar:'polo'}),
+ J('f14','Нидерланды','Сборные','1988','Adidas','vint',48000,'M',{c1:'#F28A1B',tr:'#fff',collar:'polo'},['Редкое']),
+ J('f15','Бразилия','Сборные','1998','Nike','ds',33000,'L',{c1:'#F2C230',tr:'#0E8F5B',collar:'v'}),
+ J('f16','Аргентина','Сборные','1986','Le Coq Sportif','vint',57000,'M',{c1:'#8FC7EE',c2:'#F4F4F2',p:'stripes',tr:'#1D2A5B',collar:'polo'},['Редкое']),
+ J('f17','Лилль','Другие','2005/06','','vint',16500,'S',{c1:'#C8102E',c2:'#F4F4F2',p:'halves',tr:'#fff',collar:'polo'})
+];
+var ALL=SHOP.concat(FOOT);
+var BY={};ALL.forEach(function(it){BY[it.id]=it});
+var ERAS=['Все эпохи','80-е','90-е','2000-е'];
+function eraOf(it){var y=+it.year;return y<1990?'80-е':(y<2000?'90-е':'2000-е')}
+var COND={ds:{tag:'Deadstock',txt:'Новая, с бирками'},vint:{tag:'Vintage',txt:'Отличное состояние'}};
+
+/* ---------- состояние ---------- */
+var S={tab:'shop',cat:'Всё',dep:'Все',era:'Все эпохи',q:'',favs:['c1','f5'],cart:[],sheet:null,size:null};
+var TABS=['shop','foot','favs','order'];
+function name(it){return it.season?it.name+' '+it.season:it.name}
+function match(it){
+  if(!S.q)return true;var q=S.q.toLowerCase();
+  return (name(it)+' '+it.brand+' '+(it.maker||'')).toLowerCase().indexOf(q)>-1;
+}
+var heartSvg='<svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.5a4.3 4.3 0 017.5 2.3C19.5 15.4 12 20 12 20z"/></svg>';
+
+function card(it,i,big){
+  var fav=S.favs.indexOf(it.id)>-1,c=COND[it.cond];
+  var tags='<span class="tag'+(it.cond==='ds'?' ds':'')+'">'+c.tag+'</span>'+it.tags.slice(0,1).map(function(t){return '<span class="tag">'+t+'</span>'}).join('');
+  var sub=it.season?(it.maker?it.maker+' · ':'')+it.brand:it.brand;
+  return '<div class="card'+(big?' big':'')+'" role="button" tabindex="0" data-open="'+it.id+'" style="--i:'+Math.min(i,9)+'">'
+   +'<div class="ph">'+art(it.art)+'<div class="tagrow">'+tags+'</div>'
+   +'<button class="heart'+(fav?' on':'')+'" data-fav="'+it.id+'" aria-label="В избранное" aria-pressed="'+fav+'">'+heartSvg+'</button></div>'
+   +'<div class="meta"><div class="b">'+esc(sub)+'</div><div class="n">'+esc(name(it))+'</div><div class="p">'+fmt(it.price)+'<span class="s">'+esc(it.size)+'</span></div></div></div>';
+}
+
+/* ---------- экраны ---------- */
+function renderShop(){
+  var list=SHOP.filter(function(it){return match(it)&&(S.cat==='Всё'||it.cat===S.cat||it.tags.indexOf(S.cat)>-1)});
+  var fresh=SHOP.filter(function(it){return it.cond==='ds'}).slice(0,4);
+  var tk=['New in','Только что пришло','Deadstock','Футбольные джерси','Коллабы и лимитки','Палиха 1/36с1'];
+  var tkh=tk.map(function(t){return '<span>'+t+'</span>'}).join('');
+  var html='<div class="ticker" aria-hidden="true"><div class="tr">'+tkh+tkh+'</div></div>';
+  if(!S.q){
+    html+='<div class="h"><h2>Новое</h2><span>'+fresh.length+' позиции</span></div><div class="rail">'+fresh.map(function(it,i){return card(it,i,true)}).join('')+'</div>';
+  }
+  html+='<div class="h"><h2>Каталог</h2><span>'+list.length+' шт.</span></div>'
+   +'<div class="chips" id="cats">'+CATS.map(function(c){return '<button class="chip'+(c===S.cat?' on':'')+'" data-cat="'+c+'">'+c+'</button>'}).join('')+'</div>'
+   +'<div style="height:12px"></div>';
+  html+=list.length?'<div class="grid">'+list.map(function(it,i){return card(it,i)}).join('')+'</div>'
+   :'<div class="empty"><b>Ничего не нашлось</b>Попробуйте другое слово или категорию.</div>';
+  $('#v-shop').innerHTML=html;
+}
+function renderFoot(){
+  var list=FOOT.filter(function(it){return match(it)&&(S.dep==='Все'||it.dep===S.dep)&&(S.era==='Все эпохи'||eraOf(it)===S.era)});
+  var html='<div class="fhero"><div class="k">Original jerseys · 1985–2008</div><h2>Футбол</h2><p>Оригинальные джерси клубов и сборных</p>'
+   +'<div class="jr">'+jersey({c1:'#C8102E',c2:'#111',p:'stripes',tr:'#fff',collar:'polo'})+'</div>'
+   +'<div class="stub"><span>Ряд 1 · Место 9</span><span>'+FOOT.length+' джерси</span></div></div>'
+   +'<div class="h"><h2>Отделы</h2><span>по странам</span></div><div class="deps">'
+   +DEPS.map(function(d){
+      var n=d==='Все'?FOOT.length:FOOT.filter(function(x){return x.dep===d}).length,c=DEPCOL[d];
+      return '<button class="dep'+(d===S.dep?' on':'')+'" data-dep="'+d+'"><span class="dots"><i style="background:'+c[0]+'"></i><i style="background:'+c[1]+'"></i></span><b>'+d+'</b><small>'+n+' шт.</small></button>';
+   }).join('')+'</div>'
+   +'<div class="h"><h2>Эпоха</h2><span>'+list.length+' шт.</span></div>'
+   +'<div class="chips">'+ERAS.map(function(e){return '<button class="chip'+(e===S.era?' on':'')+'" data-era="'+e+'">'+e+'</button>'}).join('')+'</div><div style="height:12px"></div>';
+  html+=list.length?'<div class="grid">'+list.map(function(it,i){return card(it,i)}).join('')+'</div>'
+   :'<div class="empty"><b>В этом отделе пока пусто</b>Выберите другую эпоху или страну.</div>';
+  $('#v-foot').innerHTML=html;
+}
+function renderFavs(){
+  var list=S.favs.map(function(id){return BY[id]}).filter(Boolean);
+  var html='<div class="h"><h2>Избранное</h2><span>'+list.length+' шт.</span></div>';
+  html+=list.length?'<div class="grid">'+list.map(function(it,i){return card(it,i)}).join('')+'</div>'
+   :'<div class="empty"><svg viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0112 7.5a4.3 4.3 0 017.5 2.3C19.5 15.4 12 20 12 20z"/></svg><b>Пока ничего нет</b>Нажмите на сердечко у вещи, и она появится здесь.</div>';
+  $('#v-favs').innerHTML=html;
+}
+function renderOrder(){
+  var html='<div class="h"><h2>Заказ</h2><span>'+S.cart.length+' шт.</span></div>';
+  if(!S.cart.length){
+    html+='<div class="empty"><svg viewBox="0 0 24 24"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6.5a3 3 0 016 0V8"/></svg><b>Заказ пуст</b>Добавьте вещи из каталога, а мы передадим их менеджеру.</div>';
+  }else{
+    var sum=0;
+    S.cart.forEach(function(l,i){var it=BY[l.id];sum+=it.price;
+      html+='<div class="line" style="animation-delay:'+(i*50)+'ms"><div class="ph">'+art(it.art)+'</div><div><div class="n">'+esc(name(it))+'</div><div class="s">'+esc(it.brand)+' · '+esc(l.size)+'</div><button class="rm" data-rm="'+i+'">Убрать</button></div><div class="p">'+fmt(it.price)+'</div></div>';
+    });
+    html+='<div class="sum"><div><span>Товары</span><span>'+fmt(sum)+'</span></div><div><span>Доставка</span><span>обсудим в чате</span></div><div class="t"><span>Итого</span><span>'+fmt(sum)+'</span></div></div>'
+     +'<button class="cta" data-act="checkout"><svg viewBox="0 0 24 24"><path d="M21.5 4.3L2.8 11.5c-.8.3-.8 1.3 0 1.6l4.6 1.4 1.8 5.5c.2.6 1 .8 1.4.3l2.5-2.4 4.6 3.4c.6.4 1.3.1 1.5-.6l3.1-15c.2-.8-.5-1.4-1.3-1.1zM8.4 13.8l9.2-5.7-7 6.4-.3 3.3-1.9-4z"/></svg>Оформить в Telegram</button>'
+     +'<p class="hint">Менеджер подтвердит наличие и размер в чате.</p>';
+  }
+  $('#v-order').innerHTML=html;
+}
+function renderAll(){renderShop();renderFoot();renderFavs();renderOrder();badge()}
+function badge(bump){var b=$('#badge'),n=S.cart.length;b.textContent=n;b.classList.toggle('on',n>0);if(bump){b.classList.remove('bump');void b.offsetWidth;b.classList.add('bump')}}
+
+/* ---------- карточка товара ---------- */
+function openSheet(id){
+  var it=BY[id];if(!it)return;S.sheet=id;S.size=it.size;drawSheet();
+  var sh=$('#sheet');sh.classList.add('on');sh.setAttribute('aria-hidden','false');
+  $('#pn').scrollTop=0;
+}
+function closeSheet(){var sh=$('#sheet');sh.classList.remove('on');sh.setAttribute('aria-hidden','true');S.sheet=null}
+function drawSheet(){
+  var it=BY[S.sheet];if(!it)return;var c=COND[it.cond],fav=S.favs.indexOf(it.id)>-1;
+  var spec='<dt>Состояние</dt><dd>'+c.txt+'</dd>';
+  if(it.season){spec+='<dt>Сезон</dt><dd>'+it.season+'</dd>'+(it.maker?'<dt>Производитель</dt><dd>'+esc(it.maker)+'</dd>':'')+'<dt>Подлинность</dt><dd>Оригинал, проверен вручную</dd>'}
+  else{spec+='<dt>Год</dt><dd>'+it.year+'</dd><dt>Материал</dt><dd>'+esc(it.note)+'</dd>'}
+  var inCart=S.cart.some(function(l){return l.id===it.id&&l.size===S.size});
+  $('#pn').innerHTML='<div class="grab"></div>'
+   +'<div class="hero">'+art(it.art)+'<span class="tag x'+(it.cond==='ds'?' ds':'')+'">'+c.tag+'</span><button class="heart'+(fav?' on':'')+'" data-fav="'+it.id+'" aria-label="В избранное" aria-pressed="'+fav+'">'+heartSvg+'</button></div>'
+   +'<div class="sh"><div><div class="b">'+esc(it.season?(it.maker?it.maker+' · ':'')+it.brand:it.brand)+'</div><h3>'+esc(name(it))+'</h3></div><div class="pr">'+fmt(it.price)+'</div></div>'
+   +'<dl class="spec">'+spec+'</dl>'
+   +'<p class="lbl">Размер</p><div class="sizes">'+it.sizes.map(function(s){return '<button class="sz'+(s===S.size?' on':'')+'" data-size="'+s+'">'+s+'</button>'}).join('')+'</div>'
+   +'<button class="cta" data-act="add">'+(inCart?'Уже в заказе · добавить ещё':'Добавить в заказ')+'</button>'
+   +'<p class="hint">Единственный экземпляр. Бронь держим в чате.</p>';
+}
+
+/* ---------- действия ---------- */
+var toastT;
+function toast(t){var e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){e.classList.remove('on')},2200)}
+function setTab(t){
+  if(TABS.indexOf(t)<0)return;S.tab=t;
+  var i=TABS.indexOf(t);$('#pill').style.transform='translateX('+(i*100)+'%)';
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'),function(b){b.classList.toggle('on',b.dataset.tab===t)});
+  Array.prototype.forEach.call(document.querySelectorAll('.view'),function(v){v.classList.toggle('on',v.id==='v-'+t)});
+  if(t==='favs')renderFavs();if(t==='order')renderOrder();
+  var v=$('#v-'+t);if(v)v.scrollTop=0;
+}
+function toggleFav(id,btn){
+  var i=S.favs.indexOf(id);if(i>-1)S.favs.splice(i,1);else S.favs.push(id);
+  Array.prototype.forEach.call(document.querySelectorAll('[data-fav="'+id+'"]'),function(b){
+    var on=S.favs.indexOf(id)>-1;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on);
+    b.classList.remove('pop');void b.offsetWidth;if(on)b.classList.add('pop');
+  });
+  if(S.tab==='favs'&&!S.sheet)setTimeout(renderFavs,260);
+  if(S.sheet===id&&S.tab==='favs')setTimeout(renderFavs,0);
+}
+var app=$('#app');
+app.addEventListener('click',function(e){
+  var t=e.target;
+  var f=t.closest('[data-fav]');if(f){e.stopPropagation();toggleFav(f.dataset.fav,f);return}
+  var o=t.closest('[data-open]');if(o){openSheet(o.dataset.open);return}
+  var tb=t.closest('[data-tab]');if(tb){closeSheet();setTab(tb.dataset.tab);return}
+  var c=t.closest('[data-cat]');if(c){S.cat=c.dataset.cat;var sc=$('#v-shop').scrollTop;renderShop();$('#v-shop').scrollTop=sc;return}
+  var d=t.closest('[data-dep]');if(d){S.dep=d.dataset.dep;var s2=$('#v-foot').scrollTop;renderFoot();$('#v-foot').scrollTop=s2;return}
+  var er=t.closest('[data-era]');if(er){S.era=er.dataset.era;var s3=$('#v-foot').scrollTop;renderFoot();$('#v-foot').scrollTop=s3;return}
+  var sz=t.closest('[data-size]');if(sz){S.size=sz.dataset.size;drawSheet();return}
+  var rm=t.closest('[data-rm]');if(rm){S.cart.splice(+rm.dataset.rm,1);renderOrder();badge();return}
+  var a=t.closest('[data-act]');if(!a)return;
+  var act=a.dataset.act;
+  if(act==='close')closeSheet();
+  if(act==='add'){S.cart.push({id:S.sheet,size:S.size});badge(true);drawSheet();renderOrder();toast('Добавлено в заказ')}
+  if(act==='checkout')toast('В готовом приложении откроется чат с менеджером');
+  if(act==='search'){var s=$('#search');var on=s.classList.toggle('on');if(on)setTimeout(function(){$('#q').focus()},200);else{S.q='';$('#q').value='';renderShop();renderFoot()}}
+});
+app.addEventListener('keydown',function(e){
+  if(e.key==='Escape'&&S.sheet)closeSheet();
+  if((e.key==='Enter'||e.key===' ')&&e.target.matches('[data-open]')){e.preventDefault();openSheet(e.target.dataset.open)}
+});
+$('#q').addEventListener('input',function(e){S.q=e.target.value.trim();renderShop();renderFoot()});
+
+renderAll();setTab('shop');
+})();
+</script>
+
+</body>
+</html>
